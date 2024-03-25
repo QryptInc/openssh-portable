@@ -179,7 +179,7 @@ typedef enum {
 	oPubkeyAcceptedAlgorithms, oCASignatureAlgorithms, oProxyJump,
 	oSecurityKeyProvider, oKnownHostsCommand, oRequiredRSASize,
 	oEnableEscapeCommandline, oObscureKeystrokeTiming, oChannelTimeout,
-	oIgnore, oIgnoredUnknownOption, oDeprecated, oUnsupported
+	oIgnore, oIgnoredUnknownOption, oDeprecated, oUnsupported, oQryptToken
 } OpCodes;
 
 /* Textual representations of the tokens. */
@@ -329,6 +329,7 @@ static struct {
 	{ "enableescapecommandline", oEnableEscapeCommandline },
 	{ "obscurekeystroketiming", oObscureKeystrokeTiming },
 	{ "channeltimeout", oChannelTimeout },
+	{ "qrypttoken", oQryptToken },
 
 	{ NULL, oBadOption }
 };
@@ -2365,6 +2366,16 @@ parse_pubkey_algos:
 		argv_consume(&ac);
 		break;
 
+	case oQryptToken:
+		arg = argv_next(&ac, &av);
+		if (!arg || *arg == '\0') {
+			error("%s line %d: missing Qrypt token value.",
+			    filename, linenum);
+			goto out;
+		}
+		options->qrypt_token = xstrdup(arg);
+		break;
+
 	default:
 		error("%s line %d: Unimplemented opcode %d",
 		    filename, linenum, opcode);
@@ -2607,6 +2618,7 @@ initialize_options(Options * options)
 	options->tag = NULL;
 	options->channel_timeouts = NULL;
 	options->num_channel_timeouts = 0;
+	options->qrypt_token = ""; // Use empty token for default
 }
 
 /*
@@ -2821,7 +2833,10 @@ fill_default_options(Options * options)
 	/* remove unsupported algos from default lists */
 	def_cipher = match_filter_allowlist(KEX_CLIENT_ENCRYPT, all_cipher);
 	def_mac = match_filter_allowlist(KEX_CLIENT_MAC, all_mac);
-	def_kex = match_filter_allowlist(KEX_CLIENT_KEX, all_kex);
+	if (options->qrypt_token == NULL || strcmp(options->qrypt_token, "") == 0)
+		def_kex = match_filter_allowlist(KEX_CLIENT_KEX, all_kex);
+	else
+		def_kex = match_filter_allowlist(KEX_CLIENT_KEX_QRYPT, all_kex);
 	def_key = match_filter_allowlist(KEX_DEFAULT_PK_ALG, all_key);
 	def_sig = match_filter_allowlist(SSH_ALLOWED_CA_SIGALGS, all_sig);
 #define ASSEMBLE(what, defaults, all) \
@@ -3556,6 +3571,7 @@ dump_client_config(Options *o, const char *host)
 	dump_cfg_string(oXAuthLocation, o->xauth_location);
 	dump_cfg_string(oKnownHostsCommand, o->known_hosts_command);
 	dump_cfg_string(oTag, o->tag);
+	dump_cfg_string(oQryptToken, o->qrypt_token);
 
 	/* Forwards */
 	dump_cfg_forwards(oDynamicForward, o->num_local_forwards, o->local_forwards);

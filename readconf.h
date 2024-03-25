@@ -186,6 +186,8 @@ typedef struct {
 	u_int	num_channel_timeouts;
 
 	char	*ignored_unknown; /* Pattern list of unknown tokens to ignore */
+
+	char 	*qrypt_token; /* Qrypt token */
 }       Options;
 
 #define SSH_PUBKEY_AUTH_NO	0x00

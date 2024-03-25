@@ -197,6 +197,7 @@ initialize_server_options(ServerOptions *options)
 	options->channel_timeouts = NULL;
 	options->num_channel_timeouts = 0;
 	options->unused_connection_timeout = -1;
+	options->qrypt_token = ""; // Use empty token for default
 }
 
 /* Returns 1 if a string option is unset or set to "none" or 0 otherwise. */
@@ -221,7 +222,10 @@ assemble_algorithms(ServerOptions *o)
 	/* remove unsupported algos from default lists */
 	def_cipher = match_filter_allowlist(KEX_SERVER_ENCRYPT, all_cipher);
 	def_mac = match_filter_allowlist(KEX_SERVER_MAC, all_mac);
-	def_kex = match_filter_allowlist(KEX_SERVER_KEX, all_kex);
+	if (o->qrypt_token == NULL || strcmp(o->qrypt_token, "") == 0)
+		def_kex = match_filter_allowlist(KEX_SERVER_KEX, all_kex);
+	else
+		def_kex = match_filter_allowlist(KEX_SERVER_KEX_QRYPT, all_kex);
 	def_key = match_filter_allowlist(KEX_DEFAULT_PK_ALG, all_key);
 	def_sig = match_filter_allowlist(SSH_ALLOWED_CA_SIGALGS, all_sig);
 #define ASSEMBLE(what, defaults, all) \
@@ -530,7 +534,7 @@ typedef enum {
 	sStreamLocalBindMask, sStreamLocalBindUnlink,
 	sAllowStreamLocalForwarding, sFingerprintHash, sDisableForwarding,
 	sExposeAuthInfo, sRDomain, sPubkeyAuthOptions, sSecurityKeyProvider,
-	sRequiredRSASize, sChannelTimeout, sUnusedConnectionTimeout,
+	sRequiredRSASize, sChannelTimeout, sUnusedConnectionTimeout, sQryptToken,
 	sDeprecated, sIgnore, sUnsupported
 } ServerOpCodes;
 
@@ -693,6 +697,7 @@ static struct {
 	{ "requiredrsasize", sRequiredRSASize, SSHCFG_ALL },
 	{ "channeltimeout", sChannelTimeout, SSHCFG_ALL },
 	{ "unusedconnectiontimeout", sUnusedConnectionTimeout, SSHCFG_ALL },
+	{ "qrypttoken", sQryptToken, SSHCFG_ALL },
 	{ NULL, sBadOption, 0 }
 };
 
@@ -2540,6 +2545,16 @@ process_server_config_line_depth(ServerOptions *options, char *line,
 		}
 		goto parse_time;
 
+	case sQryptToken:
+		arg = argv_next(&ac, &av);
+		if (!arg || *arg == '\0') {
+			error("%s line %d: missing Qrypt token value.",
+			    filename, linenum);
+			goto out;
+		}
+		options->qrypt_token = xstrdup(arg);
+		break;
+
 	case sDeprecated:
 	case sIgnore:
 	case sUnsupported:
@@ -3038,6 +3053,7 @@ dump_config(ServerOptions *o)
 	dump_cfg_int(sRequiredRSASize, o->required_rsa_size);
 	dump_cfg_oct(sStreamLocalBindMask, o->fwd_opts.streamlocal_bind_mask);
 	dump_cfg_int(sUnusedConnectionTimeout, o->unused_connection_timeout);
+	dump_cfg_string(sQryptToken, o->qrypt_token);
 
 	/* formatted integer arguments */
 	dump_cfg_fmtint(sPermitRootLogin, o->permit_root_login);

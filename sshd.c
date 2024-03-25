@@ -1810,7 +1810,11 @@ main(int ac, char **av)
 		exit(1);
 	}
 
-	debug("sshd version %s, %s", SSH_VERSION, SSH_OPENSSL_VERSION);
+	/* Qrypt: Specify version is Qrypt modified & check token */
+	debug("sshd version %s, %s, Qrypt modified", SSH_VERSION, SSH_OPENSSL_VERSION);
+
+	if (options.qrypt_token == NULL || strcmp(options.qrypt_token, "") == 0)
+		debug("Warning: no Qrypt token provided. Falling back to default SSH algorithms.");
 
 	if (do_dump_cfg)
 		print_config(ssh, connection_info);
@@ -2170,6 +2174,11 @@ main(int ac, char **av)
 
 	check_ip_options(ssh);
 
+	/* Qrypt OpenSSH
+	 * Add token if available
+	 */
+	ssh->qrypt_token = options.qrypt_token;
+
 	/* Prepare the channels layer */
 	channel_init_channels(ssh);
 	channel_set_af(ssh, options.address_family);
@@ -2421,7 +2430,9 @@ do_ssh2_kex(struct ssh *ssh)
 # endif
 #endif
 	kex->kex[KEX_C25519_SHA256] = kex_gen_server;
+	kex->kex[KEX_C25519_SHA256_QRYPT] = kex_gen_server;
 	kex->kex[KEX_KEM_SNTRUP761X25519_SHA512] = kex_gen_server;
+	kex->kex[KEX_KEM_SNTRUP761X25519_SHA512_QRYPT] = kex_gen_server;
 	kex->load_host_public_key=&get_hostkey_public_by_type;
 	kex->load_host_private_key=&get_hostkey_private_by_type;
 	kex->host_key_index=&get_hostkey_index;

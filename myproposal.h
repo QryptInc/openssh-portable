@@ -38,6 +38,18 @@
 
 #define KEX_CLIENT_KEX KEX_SERVER_KEX
 
+#define QRYPT_KEX \
+	"sntrup761x25519-sha512@qrypt.com," \
+	"curve25519-sha256@qrypt.com," \
+
+#define KEX_SERVER_KEX_QRYPT \
+	QRYPT_KEX \
+	KEX_SERVER_KEX
+
+#define KEX_CLIENT_KEX_QRYPT \
+	QRYPT_KEX \
+	KEX_CLIENT_KEX
+
 #define	KEX_DEFAULT_PK_ALG	\
 	"ssh-ed25519-cert-v01@openssh.com," \
 	"ecdsa-sha2-nistp256-cert-v01@openssh.com," \

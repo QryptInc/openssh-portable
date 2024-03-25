@@ -232,6 +232,13 @@ ssh_kex2(struct ssh *ssh, char *host, struct sockaddr *hostaddr, u_short port,
 		ssh_packet_set_rekey_limits(ssh, options.rekey_limit,
 		    options.rekey_interval);
 
+	/* Qrypt OpenSSH
+	 * Add token if available
+	 */
+	if (options.qrypt_token == NULL || strcmp(options.qrypt_token, "") == 0)
+		debug("Warning: no Qrypt token provided. Falling back to default SSH algorithms.");
+	ssh->qrypt_token = options.qrypt_token;
+
 	/*
 	 * If the user has not specified HostkeyAlgorithms, or has only
 	 * appended or removed algorithms from that list then prefer algorithms
@@ -275,7 +282,9 @@ ssh_kex2(struct ssh *ssh, char *host, struct sockaddr *hostaddr, u_short port,
 # endif
 #endif
 	ssh->kex->kex[KEX_C25519_SHA256] = kex_gen_client;
+	ssh->kex->kex[KEX_C25519_SHA256_QRYPT] = kex_gen_client;
 	ssh->kex->kex[KEX_KEM_SNTRUP761X25519_SHA512] = kex_gen_client;
+	ssh->kex->kex[KEX_KEM_SNTRUP761X25519_SHA512_QRYPT] = kex_gen_client;
 	ssh->kex->verify_host_key=&verify_host_key_callback;
 
 	ssh_dispatch_run_fatal(ssh, DISPATCH_BLOCK, &ssh->kex->done);

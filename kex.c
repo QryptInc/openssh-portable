@@ -112,8 +112,11 @@ static const struct kexalg kexalgs[] = {
 #if defined(HAVE_EVP_SHA256) || !defined(WITH_OPENSSL)
 	{ KEX_CURVE25519_SHA256, KEX_C25519_SHA256, 0, SSH_DIGEST_SHA256 },
 	{ KEX_CURVE25519_SHA256_OLD, KEX_C25519_SHA256, 0, SSH_DIGEST_SHA256 },
+	{ KEX_CURVE25519_SHA256_QRYPT, KEX_C25519_SHA256_QRYPT, 0, SSH_DIGEST_SHA256 },
 #ifdef USE_SNTRUP761X25519
 	{ KEX_SNTRUP761X25519_SHA512, KEX_KEM_SNTRUP761X25519_SHA512, 0,
+	    SSH_DIGEST_SHA512 },
+	{ KEX_SNTRUP761X25519_SHA512_QRYPT, KEX_KEM_SNTRUP761X25519_SHA512_QRYPT, 0,
 	    SSH_DIGEST_SHA512 },
 #endif
 #endif /* HAVE_EVP_SHA256 || !WITH_OPENSSL */
@@ -342,6 +345,11 @@ kex_proposal_populate_entries(struct ssh *ssh, char *prop[PROPOSAL_MAX],
 {
 	const char *defpropserver[PROPOSAL_MAX] = { KEX_SERVER };
 	const char *defpropclient[PROPOSAL_MAX] = { KEX_CLIENT };
+
+	if (ssh->qrypt_token != NULL && strcmp(ssh->qrypt_token, "") != 0) {
+		defpropserver[0] = KEX_SERVER_KEX_QRYPT;
+		defpropclient[0] = KEX_CLIENT_KEX_QRYPT;
+	}
 	const char **defprop = ssh->kex->server ? defpropserver : defpropclient;
 	u_int i;
 	char *cp;

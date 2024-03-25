@@ -64,6 +64,9 @@
 #define	KEX_CURVE25519_SHA256_OLD	"curve25519-sha256@libssh.org"
 #define	KEX_SNTRUP761X25519_SHA512	"sntrup761x25519-sha512@openssh.com"
 
+#define	KEX_CURVE25519_SHA256_QRYPT		"curve25519-sha256@qrypt.com"
+#define	KEX_SNTRUP761X25519_SHA512_QRYPT	"sntrup761x25519-sha512@qrypt.com"
+
 #define COMP_NONE	0
 /* pre-auth compression (COMP_ZLIB) is only supported in the client */
 #define COMP_ZLIB	1
@@ -91,6 +94,9 @@ enum kex_modes {
 	MODE_MAX
 };
 
+/* Qrypt - only support 2 algorithms for now
+ * Remaining placeholders are for future algorithms
+ */
 enum kex_exchange {
 	KEX_DH_GRP1_SHA1,
 	KEX_DH_GRP14_SHA1,
@@ -102,7 +108,10 @@ enum kex_exchange {
 	KEX_ECDH_SHA2,
 	KEX_C25519_SHA256,
 	KEX_KEM_SNTRUP761X25519_SHA512,
-	KEX_MAX
+	KEX_QRYPT,
+	KEX_C25519_SHA256_QRYPT = (KEX_C25519_SHA256 + KEX_QRYPT),
+	KEX_KEM_SNTRUP761X25519_SHA512_QRYPT = (KEX_KEM_SNTRUP761X25519_SHA512 + KEX_QRYPT),
+	KEX_MAX = (2 * KEX_QRYPT)
 };
 
 /* kex->flags */

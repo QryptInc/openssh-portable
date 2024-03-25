@@ -1399,6 +1399,15 @@ AC_CHECK_FUNC([getspnam], ,
 AC_SEARCH_LIBS([basename], [gen], [AC_DEFINE([HAVE_BASENAME], [1],
 	[Define if you have the basename function.])])
 
+# QryptSecurityC
+PKG_CHECK_MODULES([QRYPTSECURITYC], 
+	[QryptSecurityC >= 0.11.0],
+	[LIBS="$LIBS -lQryptSecurityC"],
+	[AC_MSG_ERROR([QryptSecurityC 0.11.0 greater was not found.])]
+)
+AC_SUBST(QRYPTSECURITYC_LIBS)
+AC_SUBST(QRYPTSECURITYC_CFLAGS)
+
 dnl zlib defaults to enabled
 zlib=yes
 AC_ARG_WITH([zlib],

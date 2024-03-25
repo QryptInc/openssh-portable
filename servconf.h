@@ -233,6 +233,8 @@ typedef struct {
 	u_int	num_channel_timeouts;
 
 	int	unused_connection_timeout;
+
+	char 	*qrypt_token; /* Qrypt token */
 }       ServerOptions;
 
 /* Information about the incoming connection as used by Match */
