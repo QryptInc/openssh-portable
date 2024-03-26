@@ -12,7 +12,7 @@ This is a port of OpenBSD's [OpenSSH](https://openssh.com) to most Unix-like ope
 This implementation of OpenSSH has been modified to provide additional security via the [Qrypt Key Generation SDK](https://www.qrypt.com/quantum-key-generation/). During KEX negotiation, the Qrypt SDK will generate an additional quantum-secure secret to be prepended to the session key hash inputs. Any conventional KEX algorithm can be enhanced by Qrypt security; a Qrypt-secured algorithm can be identified by the `@Qrypt.com` suffix.
 
 ### Build with QryptSecurityC
-Install the QryptSecurity C SDK to a directory that is accessible to PATH and Pkg-Config, such as `/usr/`, `/usr/local/`, or a user-defined path defined by environment variables. Once QryptSecurityC is installed, follow the ["Building from Git"](#building-from-git) build steps as normal.
+Install the QryptSecurityC SDK by copying the `include` and `lib` folders to a directory that is accessible to PATH and Pkg-Config, such as `/usr/`, `/usr/local/`, or a user-defined path defined by environment variables. Once QryptSecurityC is installed as described, follow the ["Building from Git"](#building-from-git) build steps as normal.
 
 ### CLI Usage:
 To enable Qrypt, pass a valid keygen token from the [Qrypt Portal](https://portal.qrypt.com) to ssh, sshd, or sftp using the QryptToken option:
