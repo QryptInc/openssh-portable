@@ -1,6 +1,0 @@
-src
-*.a
-*.so*
-*.h
-conan*.txt
-deploy*.txt
