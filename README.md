@@ -1,4 +1,4 @@
-# Portable OpenSSH
+# Portable OpenSSH with Qrypt
 
 [![C/C++ CI](https://github.com/openssh/openssh-portable/actions/workflows/c-cpp.yml/badge.svg)](https://github.com/openssh/openssh-portable/actions/workflows/c-cpp.yml)
 [![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/openssh.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:openssh)
@@ -7,6 +7,18 @@
 OpenSSH is a complete implementation of the SSH protocol (version 2) for secure remote login, command execution and file transfer. It includes a client ``ssh`` and server ``sshd``, file transfer utilities ``scp`` and ``sftp`` as well as tools for key generation (``ssh-keygen``), run-time key storage (``ssh-agent``) and a number of supporting programs.
 
 This is a port of OpenBSD's [OpenSSH](https://openssh.com) to most Unix-like operating systems, including Linux, OS X and Cygwin. Portable OpenSSH polyfills OpenBSD APIs that are not available elsewhere, adds sshd sandboxing for more operating systems and includes support for OS-native authentication and auditing (e.g. using PAM).
+
+## Qrypt Modifications
+This implementation of OpenSSH has been modified to provide additional security via the [Qrypt Key Generation SDK](https://www.qrypt.com/quantum-key-generation/). During KEX negotiation, the Qrypt SDK will generate an additional quantum-secure secret to be prepended to the session key hash inputs. Any conventional KEX algorithm can be enhanced by Qrypt security; a Qrypt-secured algorithm can be identified by the `@Qrypt.com` suffix.
+
+### Build with QryptSecurityC
+Install the QryptSecurity C SDK to a directory that is accessible to PATH and Pkg-Config, such as `/usr/`, `/usr/local/`, or a user-defined path defined by environment variables. Once QryptSecurityC is installed, follow the ["Building from Git"](#building-from-git) build steps as normal.
+
+### CLI Usage:
+To enable Qrypt 
+- Export token: `export TOKEN="my token"`
+- SSH Server: `sshd -o QryptToken=$TOKEN`
+- SSH Client: `ssh -o QryptToken=$TOKEN sshuser@127.0.0.1`
 
 ## Documentation
 
