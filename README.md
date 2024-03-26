@@ -15,7 +15,7 @@ This implementation of OpenSSH has been modified to provide additional security 
 Install the QryptSecurity C SDK to a directory that is accessible to PATH and Pkg-Config, such as `/usr/`, `/usr/local/`, or a user-defined path defined by environment variables. Once QryptSecurityC is installed, follow the ["Building from Git"](#building-from-git) build steps as normal.
 
 ### CLI Usage:
-To enable Qrypt 
+To enable Qrypt, pass a valid keygen token from the [Qrypt Portal](https://portal.qrypt.com) to ssh, sshd, or sftp using the QryptToken option:
 - Export token: `export TOKEN="my token"`
 - SSH Server: `sshd -o QryptToken=$TOKEN`
 - SSH Client: `ssh -o QryptToken=$TOKEN sshuser@127.0.0.1`
