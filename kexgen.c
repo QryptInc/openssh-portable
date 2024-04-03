@@ -82,7 +82,9 @@ static int sshbuf_crypt(struct sshbuf* input, struct sshbuf* output, const struc
 	int r = 0;
 	const size_t aad_len = 4;
 	const size_t auth_len = 16;
+	struct sshbuf *input_with_padding = NULL;
 	struct sshbuf *input_with_aad = NULL;
+	struct sshbuf **input_ptr = NULL;
 
 	/* Get key and initialization vector as hashes of the secret plus a letter */
 	if ((key = calloc(1, key_len)) == NULL ||
@@ -106,30 +108,30 @@ static int sshbuf_crypt(struct sshbuf* input, struct sshbuf* output, const struc
 	/* On encrypt, we need to add the metadata size, then padding, then AAD size prefix */ 
 	if (encrypt == CIPHER_ENCRYPT) {
 		/* Copy to temp string buffer to add size to the front */
-		if ((input_with_aad=sshbuf_new()) == NULL || 
-			sshbuf_put_stringb(input_with_aad, input) != 0) {
+		if ((input_with_padding=sshbuf_new()) == NULL || 
+			sshbuf_put_stringb(input_with_padding, input) != 0) {
 			r = SSH_ERR_ALLOC_FAIL;
 			goto out;
 		}
-
 		/* Pad input data to match the cipher's block size */
-		while (sshbuf_len(input_with_aad) % blocksize) {
-			if((r=sshbuf_put_u8(input_with_aad, 0)) != 0) {
+		while (sshbuf_len(input_with_padding) % blocksize) {
+			if((r=sshbuf_put_u8(input_with_padding, 0)) != 0) {
 				goto out;
 			}
 		}
-
-		/* Copy back to original `input` variable while adding AAD size prefix */
-		sshbuf_free(input);
-		if ((input=sshbuf_new()) == NULL || 
-			sshbuf_put_stringb(input, input_with_aad) != 0) {
+		/* Copy again to add the AAD size */
+		if ((input_with_aad=sshbuf_new()) == NULL || 
+			sshbuf_put_stringb(input_with_aad, input_with_padding) != 0) {
 			r = SSH_ERR_ALLOC_FAIL;
 			goto out;
 		}
+		input_ptr = &input_with_aad;
+	} else {
+		input_ptr = &input;
 	}
 
 	/* Make sure the AAD and auth tag is excluded from the data length */
-	data_len = sshbuf_len(input) - aad_len;
+	data_len = sshbuf_len(*input_ptr) - aad_len;
 	if (encrypt == CIPHER_DECRYPT)
 		data_len -= auth_len;
 
@@ -139,11 +141,11 @@ static int sshbuf_crypt(struct sshbuf* input, struct sshbuf* output, const struc
 	};
 
 #ifdef DEBUG_KEX
-	dump_digest("en/de crypted input", sshbuf_ptr(input), sshbuf_len(input));
+	dump_digest("en/de crypted input", sshbuf_ptr(*input_ptr), sshbuf_len(*input_ptr));
 #endif
 
 	/* Run cipher */
-	if ((r = cipher_crypt(ctx, 0, enc, sshbuf_ptr(input), data_len, aad_len, auth_len)) != 0) {
+	if ((r = cipher_crypt(ctx, 0, enc, sshbuf_ptr(*input_ptr), data_len, aad_len, auth_len)) != 0) {
 		goto out;
 	}
 
@@ -162,6 +164,7 @@ static int sshbuf_crypt(struct sshbuf* input, struct sshbuf* output, const struc
 #endif
 
 out:
+	sshbuf_free(input_with_padding);
 	sshbuf_free(input_with_aad);
 	cipher_free(ctx);
 	free(key);
